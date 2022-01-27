@@ -1,0 +1,55 @@
+version: '3.8'
+#для выполения всяких других команд на сервере лучше запустить php-cli и там все команды по типу композера
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    restart: always
+    #command: composer update
+    networks:
+      - backend
+    container_name: mfMVC
+    depends_on:
+      - db
+    # network_mode: "host"
+    ports:
+      - "8005:80"
+    volumes:
+      - ./src:/var/www/html
+
+  db:
+    image: mariadb
+    restart: always
+    volumes:
+        - ./db:/var/lib/mysql
+    networks:
+      - backend
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: test
+      MYSQL_DATABASE: database
+    ports:
+      - "8889:3306"
+    container_name: mariadb
+
+
+  adminer:
+    image: adminer
+    restart: always
+    networks:
+      - backend
+    ports:
+      - "8090:8080"
+
+volumes:
+  mysql-data:
+  mfMVC:
+
+networks:
+  backend:
+    ipam:
+      driver: default
+      config:
+        -   subnet: 172.40.0.0/16
